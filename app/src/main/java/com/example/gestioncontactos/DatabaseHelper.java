@@ -9,8 +9,9 @@ import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    // CORRECCIÓN: Cambiado el número de versión a 2 para limpiar el caché corrupto del teléfono
     public DatabaseHelper(Context context) {
-        super(context, "ContactosDB", null, 1);
+        super(context, "ContactosDB", null, 2);
     }
 
     @Override
@@ -58,6 +59,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int deleteContacto(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         int res = db.delete("contactos", "id=?", new String[]{String.valueOf(id)});
+        db.close();
+        return res;
+    }
+
+    public int actualizarContacto(Contacto contacto) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("pais", contacto.getPais());
+        values.put("nombre", contacto.getNombre());
+        values.put("telefono", contacto.getTelefono());
+        values.put("nota", contacto.getNota());
+        values.put("imagen", contacto.getImagen());
+
+        int res = db.update("contactos", values, "id=?", new String[]{String.valueOf(contacto.getId())});
         db.close();
         return res;
     }

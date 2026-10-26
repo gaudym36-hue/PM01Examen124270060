@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://android.com"
+    xmlns:tools="http://android.com"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -13,45 +14,15 @@
         android:id="@+id/etBuscar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="🔍 Buscar contacto por nombre..."
+        android:hint="Buscar contacto por nombre..."
         android:inputType="text"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="10dp"
         android:padding="12dp"
         android:background="@android:drawable/edit_text"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvContactos"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"/>
 </LinearLayout>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    xmlns:android="http://schemas.android.com/apk/res/android"

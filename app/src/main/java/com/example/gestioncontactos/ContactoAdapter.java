@@ -1,54 +1,67 @@
 package com.example.gestioncontactos;
 
+import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class ContactoAdapter extends RecyclerView.Adapter<ContactoAdapter.ViewHolder> {
+public class ContactoAdapter extends ArrayAdapter<Contacto> {
+    private Context context;
+    private List<Contacto> listaContactos;
 
-    private List<Contacto> lista;
-    private OnItemClickListener listener;
-
-    public interface OnItemClickListener {
-        void onItemClick(Contacto contacto);
-    }
-
-    public ContactoAdapter(List<Contacto> lista, OnItemClickListener listener) {
-        this.lista = lista;
-        this.listener = listener;
-    }
-
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
-        return new ViewHolder(view);
+    public ContactoAdapter(Context context, List<Contacto> listaContactos) {
+        super(context, 0, listaContactos);
+        this.context = context;
+        this.listaContactos = listaContactos;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Contacto c = lista.get(position); // Corregido: se usa .get() en lugar de []
-        holder.textView.setText(c.getNombre() + " (" + c.getPais() + " " + c.getTelefono() + ")");
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(c));
+    public int getCount() {
+        return listaContactos.size();
     }
 
     @Override
-    public int getItemCount() { return lista.size(); }
-
-    public void actualizarLista(List<Contacto> nuevaLista) {
-        this.lista = nuevaLista;
-        notifyDataSetChanged();
+    public Contacto getItem(int position) {
+        return listaContactos.get(position);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textView;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            textView = itemView.findViewById(android.R.id.text1);
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            // Layout nativo de Android con soporte automático para Texto e Icono/Imagen juntos
+            convertView = LayoutInflater.from(context).inflate(android.R.layout.activity_list_item, parent, false);
         }
+
+        TextView txtInformacion = convertView.findViewById(android.R.id.text1);
+        ImageView imgIcono = convertView.findViewById(android.R.id.icon);
+
+        Contacto contacto = listaContactos.get(position);
+
+        String codigoArea = "";
+        if (contacto.getPais() != null && contacto.getPais().contains("(+")) {
+            codigoArea = " (" + contacto.getPais().substring(contacto.getPais().indexOf("(+") + 1, contacto.getPais().indexOf(")")) + ") ";
+        } else if (contacto.getPais() != null) {
+            codigoArea = " (" + contacto.getPais() + ") ";
+        }
+
+        if (txtInformacion != null) {
+            txtInformacion.setText(contacto.getNombre() + codigoArea + contacto.getTelefono());
+        }
+
+        // CRITERIO OBLIGATORIO: Ver imagen guardada desde SQLite
+        if (imgIcono != null) {
+            if (contacto.getImagen() != null && contacto.getImagen().length > 0) {
+                imgIcono.setImageBitmap(BitmapFactory.decodeByteArray(contacto.getImagen(), 0, contacto.getImagen().length));
+            } else {
+                imgIcono.setImageResource(android.R.drawable.ic_menu_report_image);
+            }
+        }
+
+        return convertView;
     }
 }
