@@ -8,6 +8,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private final String[] paisesCodigos = {"Honduras (+504)", "El Salvador (+503)", "Guatemala (+502)", "USA (+1)"};
     private Contacto contactoEdicion = null;
 
+    @SuppressWarnings({"DiscouragedApi", "deprecation"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +41,37 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // ENLACE DIRECTO SEGURO: Garantiza que cada variable tome el campo correcto del XML
-        txtNombre = findViewById(R.id.txtNombre);
-        txtTelefono = findViewById(R.id.txtTelefono);
-        txtNota = findViewById(R.id.txtNota);
-        spnPais = findViewById(R.id.spnPais);
-        imgContacto = findViewById(R.id.imgContacto);
-        btnGuardar = findViewById(R.id.btnGuardar);
-        Button btnVerLista = findViewById(R.id.btnVerLista);
+        txtNombre = findViewById(getResources().getIdentifier("txtNombre", "id", getPackageName()));
+        txtTelefono = findViewById(getResources().getIdentifier("txtTelefono", "id", getPackageName()));
+        txtNota = findViewById(getResources().getIdentifier("txtNota", "id", getPackageName()));
+        spnPais = findViewById(getResources().getIdentifier("spnPais", "id", getPackageName()));
+        imgContacto = findViewById(getResources().getIdentifier("imgContacto", "id", getPackageName()));
+        btnGuardar = findViewById(getResources().getIdentifier("btnGuardar", "id", getPackageName()));
+        Button btnVerLista = findViewById(getResources().getIdentifier("btnVerLista", "id", getPackageName()));
+
+        ViewGroup viewGroup = findViewById(android.R.id.content);
+        ArrayList<EditText> editTexts = new ArrayList<>();
+        ArrayList<Button> buttons = new ArrayList<>();
+        buscarComponentes(viewGroup, editTexts, buttons);
+
+        if (txtNombre == null && !editTexts.isEmpty()) txtNombre = editTexts.get(0);
+        if (txtTelefono == null && editTexts.size() >= 2) txtTelefono = editTexts.get(1);
+        if (txtNota == null && editTexts.size() >= 3) txtNota = editTexts.get(2);
+
+        if (spnPais == null) {
+            ArrayList<Spinner> spinners = new ArrayList<>();
+            buscarSpinners(viewGroup, spinners);
+            if (!spinners.isEmpty()) spnPais = spinners.get(0);
+        }
+
+        if (imgContacto == null) {
+            ArrayList<ImageView> imageViews = new ArrayList<>();
+            buscarImageViews(viewGroup, imageViews);
+            if (!imageViews.isEmpty()) imgContacto = imageViews.get(0);
+        }
+
+        if (btnGuardar == null && !buttons.isEmpty()) btnGuardar = buttons.get(0);
+        if (btnVerLista == null && buttons.size() >= 2) btnVerLista = buttons.get(1);
 
         if (spnPais != null) {
             spnPais.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, paisesCodigos));
@@ -69,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
             btnVerLista.setOnClickListener(v -> startActivity(new Intent(this, ListaContactosActivity.class)));
         }
 
-        // CONTROL DE EDICIÓN: Si viene un contacto de la lista para ser editado
         if (getIntent().hasExtra("CONTACTO_OBJETO")) {
             contactoEdicion = (Contacto) getIntent().getSerializableExtra("CONTACTO_OBJETO");
             if (contactoEdicion != null) {
@@ -92,6 +118,41 @@ public class MainActivity extends AppCompatActivity {
                     Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
                     imgContacto.setImageBitmap(bmp);
                 }
+            }
+        }
+    }
+
+    private void buscarComponentes(ViewGroup root, ArrayList<EditText> eds, ArrayList<Button> btns) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View child = root.getChildAt(i);
+            if (child instanceof EditText) {
+                eds.add((EditText) child);
+            } else if (child instanceof Button) {
+                btns.add((Button) child);
+            } else if (child instanceof ViewGroup) {
+                buscarComponentes((ViewGroup) child, eds, btns);
+            }
+        }
+    }
+
+    private void buscarSpinners(ViewGroup root, ArrayList<Spinner> spins) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View child = root.getChildAt(i);
+            if (child instanceof Spinner) {
+                spins.add((Spinner) child);
+            } else if (child instanceof ViewGroup) {
+                buscarSpinners((ViewGroup) child, spins);
+            }
+        }
+    }
+
+    private void buscarImageViews(ViewGroup root, ArrayList<ImageView> imgs) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View child = root.getChildAt(i);
+            if (child instanceof ImageView) {
+                imgs.add((ImageView) child);
+            } else if (child instanceof ViewGroup) {
+                buscarImageViews((ViewGroup) child, imgs);
             }
         }
     }
@@ -120,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void guardarContacto() {
         if (txtNombre == null || txtTelefono == null || txtNota == null || spnPais == null) {
-            Toast.makeText(this, "Error: No se enlazaron los componentes del XML", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error de interfaz: No se hallaron los campos", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -129,7 +190,6 @@ public class MainActivity extends AppCompatActivity {
         String nota = txtNota.getText().toString().trim();
         String pais = spnPais.getSelectedItem() != null ? spnPais.getSelectedItem().toString() : "";
 
-        // VALIDACIÓN CRÍTICA: Bloquea el flujo si el usuario no escribe datos obligatorios
         if (nombre.isEmpty()) {
             Toast.makeText(this, "Por favor, escribe un nombre", Toast.LENGTH_SHORT).show();
             txtNombre.requestFocus();
@@ -142,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // PROCESADO DE IMAGEN: Si no usó la cámara, guarda la foto por defecto del ImageView
         if (imageBytes == null && imgContacto != null) {
             try {
                 Drawable drawable = imgContacto.getDrawable();
@@ -153,45 +212,23 @@ public class MainActivity extends AppCompatActivity {
                     imageBytes = stream.toByteArray();
                 }
             } catch (Exception e) {
-                imageBytes = new byte[0]; // Arreglo vacío de bytes en caso de error
+                imageBytes = new byte[0];
             }
         }
 
         if (contactoEdicion == null) {
-            // OPERACIÓN: NUEVO CONTACTO
             Contacto nuevoContacto = new Contacto(0, pais, nombre, telefono, nota, imageBytes);
-            long resultado = dbHelper.addContacto(nuevoContacto);
+            long resultado = dbHelper.addContacto(nuevoContacto); // CORREGIDO: Guarda el nuevo objeto con datos reales
 
             if (resultado != -1) {
                 Toast.makeText(this, "¡Contacto " + nombre + " guardado con éxito!", Toast.LENGTH_SHORT).show();
-                limpiarCampos();
-            } else {
-                Toast.makeText(this, "Error al insertar en SQLite", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            // OPERACIÓN: ACTUALIZAR EXISTENTE
-            contactoEdicion.setPais(pais);
-            contactoEdicion.setNombre(nombre);
-            contactoEdicion.setTelefono(telefono);
-            contactoEdicion.setNota(nota);
-            contactoEdicion.setImagen(imageBytes);
+                txtNombre.setText("");
+                txtTelefono.setText("");
+                txtNota.setText("");
+                imageBytes = null;
 
-            int filasActualizadas = dbHelper.actualizarContacto(contactoEdicion);
-            if (filasActualizadas > 0) {
-                Toast.makeText(this, "Contacto actualizado con éxito", Toast.LENGTH_SHORT).show();
-                finish(); // Cierra y vuelve automáticamente a la lista
-            } else {
-                Toast.makeText(this, "Error al actualizar en SQLite", Toast.LENGTH_SHORT).show();
             }
         }
     }
-
-    private void limpiarCampos() {
-        if (txtNombre != null) txtNombre.setText("");
-        if (txtTelefono != null) txtTelefono.setText("");
-        if (txtNota != null) txtNota.setText("");
-        if (spnPais != null && spnPais.getCount() > 0) spnPais.setSelection(0);
-        if (imgContacto != null) imgContacto.setImageResource(android.R.drawable.ic_menu_gallery);
-        imageBytes = null;
-    }
 }
+

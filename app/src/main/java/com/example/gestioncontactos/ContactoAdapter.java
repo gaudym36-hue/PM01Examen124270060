@@ -33,7 +33,6 @@ public class ContactoAdapter extends ArrayAdapter<Contacto> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            // Layout nativo de Android con soporte automático para Texto e Icono/Imagen juntos
             convertView = LayoutInflater.from(context).inflate(android.R.layout.activity_list_item, parent, false);
         }
 
@@ -53,7 +52,6 @@ public class ContactoAdapter extends ArrayAdapter<Contacto> {
             txtInformacion.setText(contacto.getNombre() + codigoArea + contacto.getTelefono());
         }
 
-        // CRITERIO OBLIGATORIO: Ver imagen guardada desde SQLite
         if (imgIcono != null) {
             if (contacto.getImagen() != null && contacto.getImagen().length > 0) {
                 imgIcono.setImageBitmap(BitmapFactory.decodeByteArray(contacto.getImagen(), 0, contacto.getImagen().length));

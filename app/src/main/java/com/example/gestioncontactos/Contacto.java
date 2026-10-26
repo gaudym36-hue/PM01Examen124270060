@@ -26,7 +26,6 @@ public class Contacto implements Serializable {
     public String getNota() { return nota; }
     public byte[] getImagen() { return imagen; }
 
-    // --- AGREGAMOS ESTOS SETTERS QUE HACÍAN FALTA ---
     public void setId(int id) { this.id = id; }
     public void setPais(String pais) { this.pais = pais; }
     public void setNombre(String nombre) { this.nombre = nombre; }

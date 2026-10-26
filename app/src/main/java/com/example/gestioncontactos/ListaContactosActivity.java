@@ -34,7 +34,7 @@ public class ListaContactosActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // BÚSQUEDA DINÁMICA POR TIPO DE COMPONENTE (Evita errores de IDs en el XML)
+        // BÚSQUEDA DINÁMICA: Encuentra la lista y el buscador sin importar sus IDs en el XML
         ViewGroup viewGroup = findViewById(android.R.id.content);
 
         ArrayList<ListView> listViews = new ArrayList<>();
@@ -49,7 +49,6 @@ public class ListaContactosActivity extends AppCompatActivity {
             etBuscador = editTexts.get(0);
         }
 
-        // Configuración segura del buscador por texto
         if (etBuscador != null) {
             etBuscador.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -63,7 +62,6 @@ public class ListaContactosActivity extends AppCompatActivity {
             });
         }
 
-        // Configuración segura del evento clic en la lista
         if (listView != null) {
             listView.setOnItemClickListener((parent, view, position, id) -> {
                 if (listaFiltrada != null && position < listaFiltrada.size()) {
@@ -77,7 +75,7 @@ public class ListaContactosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        refrescarYMostrarLista(); // Fuerza la recarga de datos al abrir o volver a la pantalla
+        refrescarYMostrarLista();
     }
 
     private void buscarListViews(ViewGroup root, ArrayList<ListView> lists) {
@@ -113,7 +111,7 @@ public class ListaContactosActivity extends AppCompatActivity {
 
         if (listView != null) {
             listView.setAdapter(adaptador);
-            adaptador.notifyDataSetChanged(); // Fuerza al componente visual a redibujarse
+            adaptador.notifyDataSetChanged();
         }
     }
 
